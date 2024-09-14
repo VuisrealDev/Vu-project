@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cookies Clicker - Chat</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <div class="chat-body">
+    <form class="chat-form">
+
+    <div class="chat-content">
+
+      
+
+    </div>
+
+    <div class="chat-input">
+        <input class="input-chat" autocomplete="off">
+        <button class="chat-btn"></button>
+    </div>
+
+  </form>
+  </div>
+
+  <div class="errorMessage">
+    Wait few second to continuos chatting.
+  </div>
+
+  <script src="socket.io/socket.io.js"></script>
+  <script>
+    const socket = io()
+    
+    var chatBody = document.querySelector('.chat-body')
+    var chatContent = document.querySelector('.chat-content')
+    var chatInput = document.querySelector('.input-chat')
+    var chatBtn = document.querySelector('.chat-btn')
+    var chatForm = document.querySelector('.chat-form')
+    var errorMessage = document.querySelector('.errorMessage')
+    
+    let cooldownChat = false
+
+    var username = prompt('Set your name: ')
+
+    
+    
+    
+    socket.emit('new player', { name: username })
+
+    if(username === null){
+      location.reload()
+    }
+
+
+    
+    chatForm.addEventListener('submit', e => {
+      e.preventDefault()
+
+      if(cooldownChat == false && chatInput.value !== '') {
+          socket.emit('sendMessage', {
+          name: username,
+          text: chatInput.value
+        })
+
+        chatInput.value = ''
+
+        cooldownChat = true;
+        
+        setTimeout(() => { cooldownChat = false }, 3000)
+      }
+
+      else if(cooldownChat) {
+        errorMessage.style.display = 'flex'
+        errorMessage.textContent = 'Wait a few sec to continuos chatting.';
+        setTimeout(() => { errorMessage.style.display = 'none'; errorMessage.textContent = '' }, 300)
+      }
+
+      else {
+        errorMessage.style.display = 'flex'
+        errorMessage.textContent = 'Message can not be a space';
+        setTimeout(() => { errorMessage.style.display = 'none'; errorMessage.textContent = '' }, 300)
+      }
+
+      
+
+    })
+
+    socket.on('sendMessage', function(data) {
+      let item = document.createElement('div')
+      let name = document.createElement('div')
+      let text = document.createElement('div')
+
+      item.classList.add('chat-item')
+      name.classList.add('chat-sender')
+      text.classList.add('chat-message')
+
+      name.innerHTML = data.name
+      text.innerHTML = data.text
+
+      item.appendChild(name)
+      item.appendChild(text)
+      chatContent.appendChild(item)
+
+    })
+
+    socket.on('new player', function(data) {
+      let item = document.createElement('div')
+      let name = document.createElement('div')
+      let text = document.createElement('div')
+
+      item.classList.add('chat-item')
+      name.classList.add('chat-sender')
+      text.classList.add('chat-message')
+
+      name.innerHTML = 'VUISREAL (real)'
+      name.style.fontWeight = '200'
+      name.style.color = 'red'
+      text.innerHTML = data.name + ' is online'
+
+      item.appendChild(name)
+      item.appendChild(text)
+      chatContent.appendChild(item)
+    })
+
+    
+    
+  </script>
+</body>
+</html>
