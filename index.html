@@ -3,11 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cookies Clicker - Chat</title>
+  <title>Chat app</title>
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
+
+  
 
   <div class="chat-body">
     <form class="chat-form">
@@ -23,12 +25,17 @@
         <button class="chat-btn"></button>
     </div>
 
+    
+
+
   </form>
   </div>
 
   <div class="errorMessage">
     Wait few second to continuos chatting.
   </div>
+
+  <div class="disconnect-message"></div>
 
   <script src="socket.io/socket.io.js"></script>
   <script>
@@ -40,12 +47,12 @@
     var chatBtn = document.querySelector('.chat-btn')
     var chatForm = document.querySelector('.chat-form')
     var errorMessage = document.querySelector('.errorMessage')
-    
+    var disconnectMessage = document.querySelector('.disconnect-message')
+
     let cooldownChat = false
 
     var username = prompt('Set your name: ')
 
-    
     
     
     socket.emit('new player', { name: username })
@@ -53,6 +60,7 @@
     if(username === null){
       location.reload()
     }
+    
 
 
     
@@ -123,6 +131,15 @@
       item.appendChild(name)
       item.appendChild(text)
       chatContent.appendChild(item)
+    })
+
+    socket.on('playerDis', function() {
+      disconnectMessage.style.display = 'block'
+      disconnectMessage.textContent = username + ' disconnected';
+      setTimeout(() => {
+        disconnectMessage.style.display = 'none'
+        disconnectMessage.textContent = '';
+      }, 1000)
     })
 
     
