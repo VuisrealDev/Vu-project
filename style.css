@@ -70,13 +70,13 @@
 }
 
 .chat-body button {
+    background-image: url('https://gtd.namdorado.com/image/send.png');
     height: 44px;
     width: 44px;
     float: right;
     top: -44px;
     position: relative;
     background-color: transparent;
-	border-left: 1px solid #000;
 }
 
 .errorMessage {
