@@ -7,10 +7,10 @@
   <link rel="stylesheet" href="style.css">
 </head>
 
-<body>
+<body onbeforeunload="disconnect()">
 
 
-  <iframe src="https://gtd.namdorado.com/" frameborder="0" style="width: 100%; height: 100%; position: absolute; top: 0; left: 0;"></iframe>
+  <iframe src="https://eldorado.ayano.pw" frameborder="0" style="width: 100%; height: 100%; position: absolute; top: 0; left: 0;"></iframe>
 
   <button style="position: absolute; right: 10px; top: 10px; padding: 5px 15px; color: black; border: 1px solid white; border-radius: 10px; cursor: pointer;" class="toggle-chat">Open</button>
   
@@ -70,14 +70,22 @@
       }
     })
     
-    socket.emit('new player', { name: username })
+    
 
     if(username === null){
       location.reload()
     }
+    else if(username && username == ' ') {
+      location.reload()
+    }
+
+
+    function disconnect() {
+      socket.emit('playerDis', { name: username })
+    }
     
 
-
+    socket.emit('new player', { name: username })
     
     chatForm.addEventListener('submit', e => {
       e.preventDefault()
@@ -148,13 +156,22 @@
       chatContent.appendChild(item)
     })
 
-    socket.on('playerDis', function() {
-      disconnectMessage.style.display = 'block'
-      disconnectMessage.textContent = username + ' disconnected';
-      setTimeout(() => {
-        disconnectMessage.style.display = 'none'
-        disconnectMessage.textContent = '';
-      }, 1000)
+    socket.on('playerDis', function(data) {
+      let item = document.createElement('div')
+      let text = document.createElement('div')
+
+      item.classList.add('chat-item')
+      text.classList.add('chat-message')
+
+      text.innerHTML = data.name + ' Disconnected'
+      text.style.textAlign = 'center'
+      text.style.color = 'white'
+      text.style.fontSize = '12px';
+
+      setTimeout(() => { item.remove(); text.remove() }, 2000)
+
+      item.appendChild(text)
+      chatContent.appendChild(item)
     })
 
     
