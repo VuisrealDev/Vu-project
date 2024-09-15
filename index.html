@@ -11,6 +11,8 @@
 
 
   <iframe src="https://eldorado.ayano.pw" frameborder="0" style="width: 100%; height: 100%; position: absolute; top: 0; left: 0;"></iframe>
+
+  <button style="position: absolute; right: 10px; top: 10px; padding: 5px 15px; color: black; border: 1px solid white; border-radius: 10px; cursor: pointer;" class="toggle-chat">Open</button>
   
 
   <div class="chat-body">
@@ -50,12 +52,22 @@
     var chatForm = document.querySelector('.chat-form')
     var errorMessage = document.querySelector('.errorMessage')
     var disconnectMessage = document.querySelector('.disconnect-message')
+    var toggleChat = document.querySelector('.toggle-chat')
 
     let cooldownChat = false
 
     var username = prompt('Set your name: ')
 
-    
+    toggleChat.addEventListener('click', e => {
+      if(toggleChat.innerHTML == 'Open') {
+        chatBody.style.display = 'none'
+        toggleChat.innerHTML = 'Close'
+      }
+      else {
+        chatBody.style.display = 'block'
+        toggleChat.innerHTML = 'Open'
+      }
+    })
     
     socket.emit('new player', { name: username })
 
