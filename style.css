@@ -2,8 +2,8 @@
     opacity: 1;
     display: block;
 	position: absolute;
-	bottom: 0;
-	right: 0;
+	top: 0;
+	left: 0;
 	user-select: none;
     
 }
@@ -103,13 +103,4 @@
     left: 50%;
     transform: translateX(-50%);
     font-size: 12px;
-}
-
-.toggle-chat {
-    transition: .2s;
-}
-
-.toggle-chat:active {
-    background: #eee;
-    transform: scale(1.07)
 }
