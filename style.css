@@ -104,3 +104,12 @@
     transform: translateX(-50%);
     font-size: 12px;
 }
+
+.toggle-chat {
+    transition: .2s;
+}
+
+.toggle-chat:active {
+    background: #eee;
+    transform: scale(1.07)
+}
