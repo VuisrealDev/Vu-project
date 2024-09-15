@@ -22,9 +22,10 @@ io.sockets.on('connection', function(socket) {
 
     socket.on('new player', data => {
         io.emit('new player', data)
+        console.log('User Connected.')
     })
     
-    console.log('User Connected.')
+    
     socket.id = Math.random()
 
     socket.on('sendMessage', function(data) {
@@ -32,7 +33,11 @@ io.sockets.on('connection', function(socket) {
     })
 
     socket.on('disconnect', function() {
-        io.emit('playerDis')
+        delete SOCKET_LIST[socket.id]
+    })
+
+    socket.on('playerDis', function(data) {
+        io.emit('playerDis', data)
         delete SOCKET_LIST[socket.id]
     })
 
