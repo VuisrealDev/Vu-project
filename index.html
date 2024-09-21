@@ -1,183 +1,261 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Chat Code</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
 
-    <link rel="stylesheet" href="style.css">
-    
-</head>
+    <canvas id="canvas" width="500" height="500">
+      Your Browser Does Not Support Canvas and HTML5
+    </canvas>
 
-<body onbeforeunload="disconnect()">
+    <script src="socket.io/socket.io.js"></script>
+    <script src="engine.js"></script>
+    <script>
+      const socket = io();
 
+      var canvas = document.getElementById("canvas"),
+        ctx = canvas.getContext("2d"),
+        W = window.innerWidth,
+        H = window.innerHeight;
 
-  <iframe src="https://gtd.namdorado.com" frameborder="0" style="position: absolute; width: 100%; height: 100%; top:0; left: 0;"></iframe>  
+      var keys = {};
 
-  <button style="position: absolute; top: 10px; left: 10px; padding: 10px 20px; color: black; border: 1px solid dodgerblue; border-radius: 5px; cursor: pointer; color: dodgerblue;" class="toggle-chat">Open</button>
-  
-  
+      window.addEventListener(
+        "keydown",
+        function (e) {
+          keys[e.code] = true;
+        },
+        false
+      );
 
-  <div class="chat-body" style="left: 0; bottom: 0;">
-    <form class="chat-form">
+      //check if key is not being pressed or has lifted up
+      window.addEventListener(
+        "keyup",
+        function (e) {
+          delete keys[e.code];
+        },
+        false
+      );
 
-    <div class="chat-content">
-
-      
-
-    </div>
-
-    <div class="chat-input">
-        <input class="input-chat" autocomplete="off">
-        <button class="chat-btn"></button>
-    </div>
-
-    
-    
-
-  </form>
-  </div>
-
-  <div class="errorMessage">
-    Wait few second to continuos chatting.
-  </div>
-
-
-  <div class="disconnect-message"></div>
-
-  <script src="socket.io/socket.io.js"></script>
-  <script>
-    const socket = io()
-    
-    var chatBody = document.querySelector('.chat-body')
-    var chatContent = document.querySelector('.chat-content')
-    var chatInput = document.querySelector('.input-chat')
-    var chatBtn = document.querySelector('.chat-btn')
-    var chatForm = document.querySelector('.chat-form')
-    var errorMessage = document.querySelector('.errorMessage')
-    var disconnectMessage = document.querySelector('.disconnect-message')
-    var toggleChat = document.querySelector('.toggle-chat')
-
-    let cooldownChat = false
-
-    var username = prompt('Set your name: ')
-
-    toggleChat.addEventListener('click', e => {
-      if(toggleChat.innerHTML == 'Open') {
-        chatBody.style.display = 'none'
-        toggleChat.innerHTML = 'Close'
+      //game loop to make the game smoother
+      function gameLoop() {
+        if (keys['KeyA']) {
+          socket.emit("pressed", 'keyA');
+        }
+        if (keys['KeyW']) {
+          socket.emit("pressed", 'keyW');
+        }
+        if (keys['KeyS']) {
+          socket.emit("pressed", 'keyS');
+        }
+        if (keys['KeyD']) {
+          socket.emit("pressed", 'keyD');
+        }
+        window.requestAnimationFrame(gameLoop);
       }
-      else {
-        chatBody.style.display = 'block'
-        toggleChat.innerHTML = 'Open'
-      }
-    })
-    
-    
-    
-    if(username === null){
-      location.reload()
-    }
-    else if(username && username == ' ') {
-      location.reload()
-    }
+      window.requestAnimationFrame(gameLoop);
 
+      //the connected user joins and gets all the players on server
+      socket.on("welcome", function (currentUser, currentUsers) {
 
-    function disconnect() {
-      socket.emit('playerDis', { name: username })
-    }
-    
+        ctx.globalCompositeOperation = "source-over";
+        //Lets reduce the opacity of the BG paint to give the final touch
+        ctx.clearRect(0,0,W,H)
 
-    socket.emit('new player', { name: username })
-    
-    chatForm.addEventListener('submit', e => {
-      e.preventDefault()
+        //Lets blend the particle with the BG
+        ctx.globalCompositeOperation = "lighter";
 
-      if(cooldownChat == false && chatInput.value !== '') {
-          socket.emit('sendMessage', {
-          name: username,
-          text: chatInput.value
-        })
+        //players in lobby
+        for (var i = 0; i < currentUsers.length; i++) {
+          ctx.beginPath();
 
-        chatInput.value = ''
+          //Time for some colors
+          var gradient = ctx.createRadialGradient(
+            currentUsers[i].x,
+            currentUsers[i].y,
+            0,
+            currentUsers[i].x,
+            currentUsers[i].y,
+            currentUsers[i].radius
+          );
+          gradient.addColorStop(0, "white");
+          gradient.addColorStop(0.4, "white");
+          gradient.addColorStop(0.4, currentUsers[i].color);
+          gradient.addColorStop(1, "black");
 
-        cooldownChat = true;
-        
-        setTimeout(() => { cooldownChat = false }, 3000)
-      }
+          ctx.fillStyle = 'red';
+          ctx.arc(
+            currentUsers[i].x,
+            currentUsers[i].y,
+            currentUsers[i].radius,
+            Math.PI * 2,
+            false
+          );
+          ctx.fill();
+        }
 
-      else if(cooldownChat) {
-        errorMessage.style.display = 'flex'
-        errorMessage.textContent = 'Wait a few sec to continuos chatting.';
-        setTimeout(() => { errorMessage.style.display = 'none'; errorMessage.textContent = '' }, 300)
-      }
+        //player
+        ctx.beginPath();
+        //Time for some colors
+        var gradient = ctx.createRadialGradient(
+          currentUser.x,
+          currentUser.y,
+          0,
+          currentUser.x,
+          currentUser.y,
+          currentUser.radius
+        );
+        gradient.addColorStop(0, "white");
+        gradient.addColorStop(0.4, "white");
+        gradient.addColorStop(0.4, currentUser.color);
+        gradient.addColorStop(1, "black");
 
-      else {
-        errorMessage.style.display = 'flex'
-        errorMessage.textContent = 'Message can not be a space';
-        setTimeout(() => { errorMessage.style.display = 'none'; errorMessage.textContent = '' }, 300)
-      }
+        ctx.fillStyle = 'red';
+        ctx.arc(
+          currentUser.x,
+          currentUser.y,
+          currentUser.radius,
+          Math.PI * 2,
+          false
+        );
+        ctx.fill();
+      });
 
-      
+      //other users get updated with new players when teh new player joins
+      socket.on("currentUsers", function (currentUsers) {
+        ctx.globalCompositeOperation = "source-over";
+        //Lets reduce the opacity of the BG paint to give the final touch
+        ctx.clearRect(0,0,W,H)
 
-    })
+        //Lets blend the particle with the BG
+        ctx.globalCompositeOperation = "lighter";
 
-    socket.on('sendMessage', function(data) {
-      let item = document.createElement('div')
-      let name = document.createElement('div')
-      let text = document.createElement('div')
+        for (var i = 0; i < currentUsers.length; i++) {
+          ctx.beginPath();
 
-      item.classList.add('chat-item')
-      name.classList.add('chat-sender')
-      text.classList.add('chat-message')
+          //Time for some colors
+          var gradient = ctx.createRadialGradient(
+            currentUsers[i].x,
+            currentUsers[i].y,
+            0,
+            currentUsers[i].x,
+            currentUsers[i].y,
+            currentUsers[i].radius
+          );
+          gradient.addColorStop(0, "white");
+          gradient.addColorStop(0.4, "white");
+          gradient.addColorStop(0.4, currentUsers[i].color);
+          gradient.addColorStop(1, "black");
 
-      name.innerHTML = data.name
-      text.innerHTML = data.text
+          ctx.fillStyle = 'red';
+          ctx.arc(
+            currentUsers[i].x,
+            currentUsers[i].y,
+            currentUsers[i].radius,
+            Math.PI * 2,
+            false
+          );
+          ctx.fill();
+        }
+      });
 
-      item.appendChild(name)
-      item.appendChild(text)
-      chatContent.appendChild(item)
+      //if a player leaves, everyone gets new set of players
+      socket.on("playerLeft", function (currentUsers) {
+        ctx.globalCompositeOperation = "source-over";
+        //Lets reduce the opacity of the BG paint to give the final touch
+        ctx.clearRect(0,0,W, H)
 
-    })
+        //Lets blend the particle with the BG
+        ctx.globalCompositeOperation = "lighter";
 
-    socket.on('new player', function(data) {
-      let item = document.createElement('div')
-      let name = document.createElement('div')
-      let text = document.createElement('div')
+        for (var i = 0; i < currentUsers.length; i++) {
+          ctx.beginPath();
 
-      item.classList.add('chat-item')
-      name.classList.add('chat-sender')
-      text.classList.add('chat-message')
+          //Time for some colors
+          var gradient = ctx.createRadialGradient(
+            currentUsers[i].x,
+            currentUsers[i].y,
+            0,
+            currentUsers[i].x,
+            currentUsers[i].y,
+            currentUsers[i].radius
+          );
+          gradient.addColorStop(0, "white");
+          gradient.addColorStop(0.4, "white");
+          gradient.addColorStop(0.4, currentUsers[i].color);
+          gradient.addColorStop(1, "black");
 
-      name.innerHTML = 'VUISREAL (real)'
-      name.style.fontWeight = '200'
-      name.style.color = 'red'
-      text.innerHTML = data.name + ' is online'
+          ctx.fillStyle = 'red';
+          ctx.arc(
+            currentUsers[i].x,
+            currentUsers[i].y,
+            currentUsers[i].radius,
+            Math.PI * 2,
+            false
+          );
+          ctx.fill();
+        }
+      });
 
-      item.appendChild(name)
-      item.appendChild(text)
-      chatContent.appendChild(item)
-    })
+      socket.on("PlayersMoving", function (players) {
+        ctx.globalCompositeOperation = "source-over";
+        //Lets reduce the opacity of the BG paint to give the final touch
+        ctx.clearRect(0,0,W,H)
+        //Lets blend the particle with the BG
+        ctx.globalCompositeOperation = "lighter";
 
-    socket.on('playerDis', function(data) {
-      let item = document.createElement('div')
-      let text = document.createElement('div')
+        var players = players;
+        var i = 0;
+        function allPlayers() {
+          for (i; i < players.length; i++) {
+            ctx.beginPath();
 
-      item.classList.add('chat-item')
-      text.classList.add('chat-message')
+            //Time for some colors
+            var gradient = ctx.createRadialGradient(
+              players[i].x,
+              players[i].y,
+              0,
+              players[i].x,
+              players[i].y,
+              players[i].radius
+            );
+            gradient.addColorStop(0.5, "white");
+            gradient.addColorStop(0.5, players[i].color);
+            gradient.addColorStop(1, "black");
 
-      text.innerHTML = data.name + ' Disconnected'
-      text.style.textAlign = 'center'
-      text.style.color = 'white'
-      text.style.fontSize = '12px';
-
-      setTimeout(() => { item.remove(); text.remove() }, 2000)
-
-      item.appendChild(text)
-      chatContent.appendChild(item)
-    })
-
-    
-    
-  </script>
-</body>
+            ctx.fillStyle = 'red';
+            ctx.arc(
+              players[i].x,
+              players[i].y,
+              players[i].radius,
+              Math.PI * 2,
+              false
+            );
+            
+            if (players[i].x + players[i].radius > canvas.width) {
+              players.x = canvas.width - players.radius
+            }
+            
+            if (players[i].y + players[i].radius > canvas.height) {
+              players[i].y = canvas.height - players[i].radius
+            }
+            
+            if (players[i].x < 0) {
+              players[i].x = 0; players[i].speed = 0
+            }
+            
+            if (players[i].y < 0) {
+              players[i].y = 0; players[i].speed = 0
+            }
+            ctx.fill();
+          }
+        }
+        allPlayers();
+      });
+    </script>
+  </body>
 </html>
