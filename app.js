@@ -1,4 +1,6 @@
+const { deepEqual } = require("assert");
 const exp = require("constants");
+const { setFips } = require("crypto");
 const express = require("express");
 const { platform } = require("os");
 const { sourceMapsEnabled } = require("process");
@@ -12,74 +14,51 @@ app.get("/", function (req, res) {
 app.use(express.static(__dirname));
 
 const SOCKET_LIST = {};
+let players = {};
 
-var players = [];
+const io = require("socket.io")(serv, {});
 
-//Lets create a function which will help us to create multiple players
-function newPlayer() {
-  this.name;
-  this.id = 1;
-  this.x = Math.random() * 500;
-  this.y = Math.random() * 500;
-  
-  //Random colors
-  var r = (Math.random() * 255) >> 0;
-  var g = (Math.random() * 255) >> 0;
-  var b = (Math.random() * 255) >> 0;
-  this.color = "rgba(" + r + ", " + g + ", " + b + ", 0.5)";
-
-  //Random size
-  this.radius = Math.random() * 15 + 15;
-  this.speed = 5;
-
-  return {
-    name: this.name,
-    x: this.x,
-    y: this.y,
-    color: this.color,
-    radius: this.radius,
-    speed: this.speed,
-  };
-}
-
-const io = require('socket.io')(serv, {})
-
-//calls to the server and tracking connection of each new user
 io.sockets.on("connection", function (socket) {
-  var currentPlayer = new newPlayer(); //new player made
-  players.push(currentPlayer); //push player object into array
+  socket.id = Math.random();
 
-  //create the players Array
-  socket.broadcast.emit("currentUsers", players);
-  socket.emit("welcome", currentPlayer, players);
+  SOCKET_LIST[socket.id] = socket;
 
-  //disconnected
-  socket.on("disconnect", function () {
-    players.splice(players.indexOf(currentPlayer), 1);
-    socket.broadcast.emit("playerLeft", players);
+  socket.on("userConnected", function (data) {
+    io.emit("userConnected", data);
+    console.log("User connected.");
   });
 
-  socket.on("pressed", function (key) {
-    if (key === 'keyW') {
-      currentPlayer.y -= currentPlayer.speed;
-      socket.emit("PlayersMoving", players);
-      socket.broadcast.emit("PlayersMoving", players);
+  socket.on("sendChat", function (data) {
+    io.emit("sendChat", data);
+  });
+
+  players[socket.id] = {
+    x: Math.random() * 800,
+    y: Math.random() * 600,
+  };
+
+  socket.on("currentPlayers", function(player) {
+    io.emit('currentPlayers', player)
+  });
+
+  socket.on("newPlayer", function(data) {
+    io.emit('newPlayer', { id: socket.id, ...players[socket.id] })
+  });
+
+  socket.on("playerMovement", (movementData) => {
+    if (players[socket.id]) {
+      players[socket.id].x += movementData.x;
+      players[socket.id].y += movementData.y;
+      socket.broadcast.emit("playerMoved", {
+        id: socket.id,
+        ...players[socket.id],
+      });
     }
-    if (key === 'keyS') {
-      currentPlayer.y += currentPlayer.speed;
-      socket.emit("PlayersMoving", players);
-      socket.broadcast.emit("PlayersMoving", players);
-    }
-    if (key === 'keyA') {
-      currentPlayer.x -= currentPlayer.speed;
-      socket.emit("PlayersMoving", players);
-      socket.broadcast.emit("PlayersMoving", players);
-    }
-    if (key === 'keyD') {
-      currentPlayer.x += currentPlayer.speed;
-      socket.emit("PlayersMoving", players);
-      socket.broadcast.emit("PlayersMoving", players);
-    }
+  });
+
+  socket.on("disconnect", () => {
+    delete players[socket.id];
+    io.emit("disconnected", socket.id);
   });
 });
 
