@@ -14,6 +14,8 @@ var server = http.Server(app);
 var io = socketIO(server, { pingInterval: 1000 });
 let game = new Game(io); // initialize game
 
+const port = process.env.PORT || 4000;
+
 app.use("/img", express.static(__dirname + "/img"));
 app.use("/build", express.static(__dirname + "/build"));
 
@@ -40,4 +42,4 @@ setInterval(function () {
 }, FRAME_TIME);
 
 // Start the server
-server.listen(2000, () => console.log(`Listening on port: 2000`));
+server.listen(2000, () => console.log(`Listening on port: ${port}`));
