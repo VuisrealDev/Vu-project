@@ -10,7 +10,7 @@ const Game = require("./game/Game");
 const FRAME_TIME = Math.floor(1000 / 60);
 
 var app = express();
-var server = http.Server(app);
+var server = http.createServer(app)
 var io = socketIO(server, { pingInterval: 1000 });
 let game = new Game(io); // initialize game
 
@@ -42,4 +42,4 @@ setInterval(function () {
 }, FRAME_TIME);
 
 // Start the server
-server.listen(2000, () => console.log(`Listening on port: ${port}`));
+server.listen(port, () => console.log(`Listening on port: ${port}`));
