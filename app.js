@@ -7,8 +7,7 @@ const socketIO = require("socket.io");
 // classes
 const Game = require("./game/Game");
 
-// constants
-const PORT = process.env.PORT || 5000;
+
 const FRAME_TIME = Math.floor(1000 / 60);
 
 var app = express();
@@ -16,7 +15,6 @@ var server = http.Server(app);
 var io = socketIO(server, { pingInterval: 1000 });
 let game = new Game(io); // initialize game
 
-app.set("port", PORT);
 app.use("/img", express.static(__dirname + "/img"));
 app.use("/build", express.static(__dirname + "/build"));
 
@@ -34,4 +32,4 @@ setInterval(function () {
 }, FRAME_TIME);
 
 // Start the server
-server.listen(PORT, () => console.log(`Listening on port ${PORT}`));
+server.listen(2000, () => console.log(`Listening on port: 2000`));
