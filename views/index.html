@@ -1,0 +1,178 @@
+<html></html>
+  <head>
+    <title>Stick Fighter</title>
+    
+    <style>
+      * {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+  overflow: hidden;
+}
+
+canvas {
+  position: absolute;
+  z-index: -999;
+}
+
+.chat-body {
+  opacity: 1;
+  display: block;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+
+.chat-body .chat-content,
+.chat-input,
+input {
+  width: 300px;
+}
+
+.chat-body .chat-content {
+  height: 300px;
+}
+
+.chat-body .chat-content {
+  width: 350px;
+  height: 236px;
+  background: #00000099;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 10px;
+  opacity: 1;
+  display: block;
+  scrollbar-color: #ffffff5c #80000000;
+  border-radius: 0 10px 0 0;
+}
+
+.chat-item {
+  display: flex;
+  padding: 0px;
+  flex-direction: column;
+}
+
+.chat-item .chat-sender {
+  width: 100%;
+  text-align: left;
+  color: wheat;
+  font-size: 14px;
+  overflow: hidden;
+  height: 20px;
+  line-height: 20px;
+}
+
+.chat-item .chat-message {
+  width: 100%;
+  text-align: left;
+  color: #ede3d0;
+  padding-left: 10px;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.chat-input {
+  width: 350px;
+  height: 44px;
+  background: #f3f3f3;
+  margin-bottom: 10px;
+}
+
+input {
+  width: 300px;
+}
+
+input {
+  width: 350px;
+  height: 44px;
+  background: #f3f3f3;
+  padding-left: 10px;
+}
+
+.chat-body button {
+  background-image: url("https://eldorados2.ayano.pw/image/send.png");
+  height: 44px;
+  width: 44px;
+  float: right;
+  top: -44px;
+  position: relative;
+  background-color: transparent;
+}
+
+.active-chat-of-btn1 {
+  position: absolute;
+  border-radius: 4px;
+  font-size: 13px;
+  width: 90px;
+  height: 28px;
+  color: white;
+  background: #28a745;
+  top: 30px;
+  left: 30px;
+}
+
+.active-chat-of-btn1:hover {
+  background: #22883a;
+}
+
+.active-chat-delete-chat {
+  position: absolute;
+  border-radius: 4px;
+  font-size: 13px;
+  width: 90px;
+  height: 28px;
+  color: white;
+  background: #28a745;
+  top: 30px;
+  right: 30px;
+}
+
+.active-chat-delete-chat:hover {
+  background: #22883a;
+}
+
+#active-coding {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  outline: none;
+  padding: 10px;
+  border: 1px solid #000;
+  width: 70px;
+  height: 20px;
+}
+
+canvas {
+  border: 1px solid #000;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+    </style>
+    
+  </head>
+  <body>
+
+    <button class="active-chat-of-btn1">Bật/Tắt Chat</button>
+
+    <div class="chat-body">
+      <div class="chat-content"></div>
+      <div class="chat-input">
+        <input type="text" id="input-chat" autocomplete="off"/>
+        <button class="btn-chat" onclick="do_send_chat()"></button>
+      </div>
+    </div>
+
+    <div id="canvas-container">
+      <canvas id="canvas" width="600" height="600"></canvas>
+    </div>
+
+  </body>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/build/client.bundle.js"></script>
+</html>
