@@ -1,4 +1,7 @@
+
+
 (function () {
+  
   function r(e, n, t) {
     function o(i, f) {
       if (!n[i]) {
@@ -175,8 +178,103 @@
     4: [
       function (require, module, exports) {
         const DrawHandler = require("./classes/DrawHandler");
+        const socket = io()
 
-        const socket = io();
+        
+        var chatBody = document.querySelector(".chat-body");
+        var chatContent = document.querySelector(".chat-content");
+        var inp = document.querySelector("#input-chat");
+        var btnChat = document.querySelector(".btn-chat");
+        var actChat = document.querySelector(".active-chat-of-btn1");
+
+        var btnChatActived = true;
+
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+
+        canvas.width = innerWidth;
+        canvas.height = innerHeight;
+
+        actChat.addEventListener("click", (e) => {
+          if (btnChatActived) {
+            chatBody.style.display = "none";
+            btnChatActived = false;
+          } else {
+            chatBody.style.display = "block";
+            btnChatActived = true;
+          }
+        });
+
+        var user = prompt("Enter your name: ");
+
+        if (user === "") {
+          location.reload();
+        } else if (!user) {
+          location.reload();
+        } else if (user == " ") {
+          location.reload();
+        } else if (user && user != "") {
+          socket.emit("userConnected", { username: user });
+        }
+
+        
+
+        inp.addEventListener("keydown", (e) => {
+          if (e.code == "Enter" && inp.value) {
+            do_send_chat();
+            inp.value = "";
+          }
+        });
+
+        btnChat.addEventListener("click", () => {
+          do_send_chat();
+          inp.value = "";
+        });
+
+        socket.on("userConnected", function (data) {
+          let item = document.createElement("div");
+          let sender = document.createElement("div");
+          let message = document.createElement("div");
+
+          item.classList.add("chat-item");
+          sender.classList.add("chat-sender");
+          message.classList.add("chat-message");
+
+          sender.innerText = "VUISREAL (real)";
+          message.textContent = "Tài khoản " + data.username + " vừa đăng nhập";
+
+          sender.style.color = "red";
+
+          item.append(sender);
+          item.append(message);
+
+          chatContent.appendChild(item);
+        });
+
+        function do_send_chat() {
+          socket.emit("sendChat", { username: user, message: inp.value });
+        }
+
+        socket.on("sendChat", function (data) {
+          let item = document.createElement("div");
+          let sender = document.createElement("div");
+          let message = document.createElement("div");
+
+          item.classList.add("chat-item");
+          sender.classList.add("chat-sender");
+          message.classList.add("chat-message");
+
+          sender.innerText = data.username;
+          message.innerHTML = data.message;
+
+          item.append(sender);
+          item.append(message);
+
+          let text = "" + data.message;
+
+          chatContent.appendChild(item);
+        });
+
         socket.on("message", function (data) {
           console.log(data);
         });
@@ -199,20 +297,19 @@
         };
 
         // Event listeners
-        document.addEventListener("keydown", function (e) {
+        addEventListener("keydown", function (e) {
           let button = keyMap[e.keyCode];
           setButton(button, true);
         });
 
-        document.addEventListener("keyup", function (e) {
+        addEventListener("keyup", function (e) {
           let button = keyMap[e.keyCode];
           setButton(button, false);
         });
 
-        const canvas = document.getElementById("canvas");
-        const drawHandler = new DrawHandler(canvas);
-
         var currentLatency = 0;
+
+        const drawHandler = new DrawHandler(canvas);
 
         // DRAW WHEN STATE IS RECEIVED
         socket.on("sendState", function (state) {
@@ -230,3 +327,4 @@
   {},
   [4]
 );
+
