@@ -1,67 +1,76 @@
-const { deepEqual } = require("assert");
-const exp = require("constants");
-const { setFips } = require("crypto");
 const express = require("express");
-const { platform } = require("os");
-const { sourceMapsEnabled } = require("process");
 const app = express();
-const serv = require("http").Server(app);
 
-app.get("/", function (req, res) {
-  res.sendFile(__dirname + "/index.html");
-});
+const path = require("path");
+const http = require("http");
+const { Server } = require("socket.io");
 
-app.use(express.static(__dirname));
+const server = http.createServer(app);
 
-const SOCKET_LIST = {};
-let players = {};
+const io = new Server(server);
+app.use(express.static(path.resolve("")));
 
-const io = require("socket.io")(serv, {});
+let arr = [];
+let playingArray = [];
 
-io.sockets.on("connection", function (socket) {
-  socket.id = Math.random();
+io.on("connection", (socket) => {
+  socket.on("find", (e) => {
+    if (e.name != null) {
+      arr.push(e.name);
 
-  SOCKET_LIST[socket.id] = socket;
+      if (arr.length >= 2) {
+        let p1obj = {
+          p1name: arr[0],
+          p1value: "X",
+          p1move: "",
+        };
+        let p2obj = {
+          p2name: arr[1],
+          p2value: "O",
+          p2move: "",
+        };
 
-  socket.on("userConnected", function (data) {
-    io.emit("userConnected", data);
-    console.log("User connected.");
-  });
+        let obj = {
+          p1: p1obj,
+          p2: p2obj,
+          sum: 1,
+        };
+        playingArray.push(obj);
 
-  socket.on("sendChat", function (data) {
-    io.emit("sendChat", data);
-  });
+        arr.splice(0, 2);
 
-  players[socket.id] = {
-    x: Math.random() * 800,
-    y: Math.random() * 600,
-  };
-
-  socket.on("currentPlayers", function(player) {
-    io.emit('currentPlayers', player)
-  });
-
-  socket.on("newPlayer", function(data) {
-    io.emit('newPlayer', { id: socket.id, ...players[socket.id] })
-  });
-
-  socket.on("playerMovement", (movementData) => {
-    if (players[socket.id]) {
-      players[socket.id].x += movementData.x;
-      players[socket.id].y += movementData.y;
-      socket.broadcast.emit("playerMoved", {
-        id: socket.id,
-        ...players[socket.id],
-      });
+        io.emit("find", { allPlayers: playingArray });
+      }
     }
   });
 
-  socket.on("disconnect", () => {
-    delete players[socket.id];
-    io.emit("disconnected", socket.id);
+  socket.on("playing", (e) => {
+    if (e.value == "X") {
+      let objToChange = playingArray.find((obj) => obj.p1.p1name === e.name);
+
+      objToChange.p1.p1move = e.id;
+      objToChange.sum++;
+    } else if (e.value == "O") {
+      let objToChange = playingArray.find((obj) => obj.p2.p2name === e.name);
+
+      objToChange.p2.p2move = e.id;
+      objToChange.sum++;
+    }
+
+    io.emit("playing", { allPlayers: playingArray });
+  });
+
+  socket.on("gameOver", (e) => {
+    playingArray = playingArray.filter((obj) => obj.p1.p1name !== e.name);
+    console.log(playingArray);
+    console.log("lol");
   });
 });
 
-serv.listen(2000, function () {
-  console.log("Server started at port*: 2000");
+app.get("/", (req, res) => {
+  return res.sendFile("index.html");
+});
+
+server.listen(3000, () => {
+  console.log("port connected to 3000");
 });
