@@ -6,6 +6,8 @@ class Game {
     this.players = {};
 
     this.io.on("connection", (socket) => {
+      
+
       io.sockets.emit(
         "message",
         `Player at socket ${socket.id} has connected.`
