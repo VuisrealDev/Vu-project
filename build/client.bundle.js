@@ -195,6 +195,11 @@
         canvas.width = innerWidth;
         canvas.height = innerHeight;
 
+        document.addEventListener('resize', e => {
+          canvas.width = innerWidth;
+          canvas.height = innerHeight;
+        })
+
         actChat.addEventListener("click", (e) => {
           if (btnChatActived) {
             chatBody.style.display = "none";
