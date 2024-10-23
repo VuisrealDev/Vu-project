@@ -165,6 +165,9 @@
 
       var btnChatActived = true;
 
+      var timeToChat = 3000;
+      var chated = false;
+
       var user = prompt("Set Your Name");
 
       actChat.addEventListener("click", (e) => {
@@ -190,16 +193,36 @@
       }
 
       inpChat.addEventListener("keydown", (e) => {
-        if (e.code == "Enter") {
+        if (e.code == "Enter" && !chated) {
           do_send_chat();
           inpChat.value = "";
+          chated = true;
+          setTimeout(() => {
+            chated = false;
+          }, timeToChat);
+        } else {
+          return;
         }
       });
 
       btnChat.addEventListener("click", () => {
-        do_send_chat();
-        inpChat.value = "";
+        if (!chated) {
+          do_send_chat();
+          inpChat.value = "";
+          chated = true;
+          setTimeout(() => {
+            chated = false;
+          }, timeToChat);
+        } else {
+          return;
+        }
       });
+
+      function scrolldown() {
+        if (chatContent) {
+          chatContent.scrollTop = chatContent.scrollHeight;
+        }
+      }
 
       socket.on("userConnected", function (data) {
         let item = document.createElement("div");
@@ -219,6 +242,7 @@
         item.append(message);
 
         chatContent.appendChild(item);
+        scrolldown();
       });
 
       socket.on("sendChat", function (data) {
@@ -241,6 +265,7 @@
         text += data.message;
 
         chatContent.appendChild(item);
+        scrolldown();
       });
     </script>
   </body>
